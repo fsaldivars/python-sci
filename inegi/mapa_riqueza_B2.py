@@ -3,7 +3,7 @@ import re
 import sci
 
 
-URL_FILE = "/home/fsaldivar/Documents/python/python-sci/inegi/"
+URL_FILE = ""
 
 datos = sci.load_xl("%smapa_riqueza.xlsx" %(URL_FILE), "Hoja1", "A1:F9")
 
@@ -19,6 +19,9 @@ def buscar_menor(datos):
     
     return pivote
 
+"""
+Busca el mayor ja
+"""
 def buscar_mayor(datos):
     pivote = datos[0][indicador_riqueza]
     total_elemetos = len(datos)
@@ -39,6 +42,15 @@ def latlon(coordenada):
      s = int(r.group(3))
 
      return g + m / 60.0 + s / 3600.0
+
+def getColor(color):
+    if color == 0:
+        return "bo" #Blue
+    elif color == 1:
+        return "m"  #Como cian
+    else:
+        return "ro" #rojo
+
 
 indice_riqueza_menor = buscar_menor(datos)
 indice_riqueza_mayor = buscar_mayor(datos)
@@ -68,23 +80,21 @@ map.fillcontinents(color="coral", lake_color="yellow")
 
 lats = sci.data_map(data_nivel_riqueza, lambda ruta: latlon(ruta["Latitud"]))
 lons = sci.data_map(data_nivel_riqueza, lambda ruta: -latlon(ruta["Longitud"]))
+color_ = sci.data_map(data_nivel_riqueza, lambda ruta: getColor(ruta["Color"])) 
 
-latlons = zip(lats, lons)
+color_map = zip(lats, lons, color_)
 
-XY = sci.data_map(latlons, lambda (lat, lon): map(lon, lat))
+X = []
+Y = []
 
-X = sci.data_map(XY, lambda (x, y): x)
-Y = sci.data_map(XY, lambda (x, y): y)
+for n in color_map:
+    lat, lon , color = n
+    
+    x, y = map(lon, lat)
 
-plt.plot(X, Y)
-plt.plot(X, Y, "ro")
+    X.append(x)
+    Y.append(y)
 
-plt.savefig("mapa_riqueza.jpg")
+    plt.plot(x, y, str(color))
 
-
-
-
-
-
-
-
+plt.savefig("mapa_riqueza.pdf")
